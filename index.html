@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Fractals</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css"/>
+		<link rel="stylesheet" href="css/bootstrap-theme.min.css"/>
+		
+		<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+
+		<script type="text/javascript" src="js/canvas.js"></script>
+		<script type="text/javascript" src="js/fractals.js"></script>
+		
+		<style>
+			html, body {
+				height: 100%;
+			}
+			
+			#about-modal .jumbotron,
+			#about-modal .modal-footer {
+				margin: 0;
+			}
+			
+			#about-modal .jumbotron {
+				background: url('img/about-background.png');
+				background-size: cover;
+				background-position: center;
+				color: white;
+				text-shadow: 0 0 30px black;
+			}
+		</style>
+		
+		<script type="text/javascript">
+			$(function() {
+				var resize_window, set_toggle, update_params, set_params, set_param,
+					canvas, current_set, params, set_example;
+				
+				canvas = new Canvas("canvas");
+				current_set = JuliaSet;
+				params = {
+					canvas: canvas,
+					c: 0.32,
+					p: 0.043,
+					x_min: -1.5,
+					x_max:  1.5,
+					y_min: -1.5,
+					y_max:  1.5
+				};
+				
+				resize_window = function() {
+					var h = $(window).height();
+					var w = $(window).width();
+					var $canvas = $("#canvas");
+					
+					if (w >= 992) {
+						var c_h = h - $("nav").height() - 120;
+						$canvas.attr("height", c_h);
+					}
+					else {
+						$canvas.attr("height", "150");
+					}
+					$canvas.attr("width", $canvas.width());
+					
+					canvas.onResize();
+				};
+				
+				set_toggle = function(t) {
+					$("ul.navbar-nav li").removeClass("active");
+					$("a[data-set-toggle=" + t + "]").parent().addClass("active");
+					
+					$(".set-control").hide();
+					$("." + t + "-control").show();
+					
+					if (t == "julia")
+						current_set = JuliaSet;
+					else
+						current_set = MandelbrotSet;
+					current_set(params);
+				};
+				
+				update_params = function() {
+					params.c = Number($("#c-param").val());
+					params.p = Number($("#p-param").val());
+					params.x_min = Number($("#x-min-param").val());
+					params.x_max = Number($("#x-max-param").val());
+					params.y_min = Number($("#y-min-param").val());
+					params.y_max = Number($("#y-max-param").val());
+					
+					set_params();
+					current_set(params);
+				}
+				
+				set_param = function(id, value) {
+					var $el = $(id);
+					if (value == $(id).val() || !$el.val()) {
+						$el.parent().removeClass("has-error");
+						$el.val(value);
+					}
+					else {
+						$el.parent().addClass("has-error");
+						$el.val("");
+					}
+				}
+				
+				set_params = function() {
+					set_param("#c-param", params.c);
+					set_param("#p-param", params.p);
+					set_param("#x-min-param", params.x_min);
+					set_param("#x-max-param", params.x_max);
+					set_param("#y-min-param", params.y_min);
+					set_param("#y-max-param", params.y_max);
+				}
+				
+				set_example = function() {
+					$("input[type=text]").val("");
+					$el = $(this);
+					var s = $el.attr("data-set");
+					if (s == "julia") {
+						params.c = Number($el.attr("data-c"));
+						params.p = Number($el.attr("data-p"));
+					}
+					params.x_min = Number($el.attr("data-x-min"));
+					params.x_max = Number($el.attr("data-x-max"));
+					params.y_min = Number($el.attr("data-y-min"));
+					params.y_max = Number($el.attr("data-y-max"));
+					set_params();
+					set_toggle(s);
+				}
+				
+				// Events
+				$(window).bind('resize', resize_window);
+				$(window).bind('load', function() {
+					resize_window();
+					set_params();
+					current_set(params);
+				});
+				
+				$(".set-toggle").bind('click', function() {
+					set_toggle($(this).attr("data-set-toggle"));
+				});
+				$("form").bind('submit', update_params);
+				$(".set-examples a").bind('click', set_example);
+			});
+		</script>
+	</head>
+	<body>
+		<nav class="navbar navbar-default" role="navigation">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-nav">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="javascript:void(0)">Fractals</a>
+			</div>
+			
+			<div class="collapse navbar-collapse" id="main-nav">
+				<ul class="nav navbar-nav">
+					<li class="active"><a href="javascript:void(0)" class="set-toggle" data-set-toggle="julia">Julia set</a></li>
+					<li><a href="javascript:void(0)" class="set-toggle" data-set-toggle="mandelbrot">Mandelbrot set</a></li>
+					<li class="dropdown">
+						<a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">Examples <b class="caret"></b></a>
+						<ul class="dropdown-menu set-examples">
+							<li><a href="javascript:void(0)" data-set="julia" data-c="0.32" data-p="0.043" data-x-min="-1.5" data-x-max="1.5" data-y-min="-1.5" data-y-max="1.5">Julia 1</a></li>
+							<li><a href="javascript:void(0)" data-set="julia" data-c="-0.8" data-p="0.156" data-x-min="-0.15" data-x-max="0.15" data-y-min="-0.15" data-y-max="0.15">Julia 2</a></li>
+							<li><a href="javascript:void(0)" data-set="mandelbrot" data-x-min="-2.25" data-x-max="0.75" data-y-min="-1.5" data-y-max="1.5">Mandelbrot 1</a></li>
+							<li><a href="javascript:void(0)" data-set="mandelbrot" data-x-min="-0.745468" data-x-max="-0.745385" data-y-min="0.112979" data-y-max="0.113039">Mandelbrot 2</a></li>
+							<li><a href="javascript:void(0)" data-set="mandelbrot" data-x-min="-0.7454356" data-x-max="-0.7454215" data-y-min="0.1130037" data-y-max="0.1130139">Mandelbrot 3</a></li>
+							<li><a href="javascript:void(0)" data-set="mandelbrot" data-x-min="-0.746541" data-x-max="-0.746378" data-y-min="0.107574" data-y-max="0.107678">Mandelbrot 4</a></li>
+							<li><a href="javascript:void(0)" data-set="mandelbrot" data-x-min="-1.254024" data-x-max="-1.252861" data-y-min="0.046252" data-y-max="0.047125">Mandelbrot 5</a></li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#" data-toggle="modal" data-target="#about-modal">About</a></li>
+				</ul>
+			</div>
+		</nav>
+		
+		<div id="about-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="about-modal-label" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="about-modal-label">About</h4>
+					</div>
+					<div class="modal-body jumbotron">
+						<h1>Fractals</h1>
+						<p>Authors: Ovcharik Maksim, Skrynnik Maria</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="container">
+			<div class="row" id="main">
+				<div class="col-md-9">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Result</h3>
+						</div>
+						<div class="panel-body">
+							<canvas id="canvas" style="width:100%; height:100%"></canvas>
+						</div>
+					</div>
+				</div>
+				
+				<div class="col-md-3">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Parameters</h3>
+						</div>
+						<div class="panel-body">
+							<form class="form-horizontal" role="form" action="javascript:void(0)">
+								<div class="form-group set-control julia-control">
+									<label for="c-param" class="control-label col-sm-4">c</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" id="c-param"/>
+									</div>
+								</div>
+								<div class="form-group set-control julia-control">
+									<label for="p-param" class="control-label col-sm-4">p</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" id="p-param"/>
+									</div>
+								</div>
+								
+								<div class="form-group set-control julia-control mandelbrot-control">
+									<label for="x-min-param" class="control-label col-sm-4">x min</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" id="x-min-param"/>
+									</div>
+								</div>
+								<div class="form-group set-control julia-control mandelbrot-control">
+									<label for="x-max-param" class="control-label col-sm-4">x max</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" id="x-max-param"/>
+									</div>
+								</div>
+								
+								<div class="form-group set-control julia-control mandelbrot-control">
+									<label for="y-min-param" class="control-label col-sm-4">y min</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" id="y-min-param"/>
+									</div>
+								</div>
+								<div class="form-group set-control julia-control mandelbrot-control">
+									<label for="y-max-param" class="control-label col-sm-4">y max</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" id="y-max-param"/>
+									</div>
+								</div>
+								
+								<div class="form-group">
+									<div class="col-sm-offset-4 col-sm-8">
+										<button type="submit" class="btn btn-default">Apply</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
